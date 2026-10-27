@@ -25,7 +25,7 @@ const ano = new Date().getFullYear();
     <Logo size={22} />
     <ul>
       <li>{empresa.cidade}</li>
-      <li><a href={`tel:+55${empresa.telefoneFixo.replace(/\D/g, '')}`}>{empresa.telefoneFixo}</a></li>
+      <li><a href={`tel:+55${empresa.telefone.replace(/\D/g, '')}`}>{empresa.telefone}</a></li>
       <li><a href={`mailto:${empresa.email}`}>{empresa.email}</a></li>
       <li><a href={empresa.instagram} target="_blank" rel="noopener">Instagram @adry_faixas</a></li>
     </ul>

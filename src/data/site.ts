@@ -1,14 +1,14 @@
 // Dados centrais do site. Para trocar o WhatsApp, edite só WHATSAPP_NUMERO.
 
 /** Número no formato internacional, só dígitos. Ex.: '5511912345678'. Vazio = abre o WhatsApp sem destinatário. */
-export const WHATSAPP_NUMERO = '';
+export const WHATSAPP_NUMERO = '5511940390256';
 
 export const empresa = {
   nome: 'Adry Faixas',
   subtitulo: 'Comunicação Visual',
   cidade: 'São Paulo - SP',
   anos: 30,
-  telefoneFixo: '(11) 4039-0256',
+  telefone: '(11) 94039-0256',
   email: 'adryfaixas@gmail.com',
   instagram: 'https://www.instagram.com/adry_faixas/',
 };
