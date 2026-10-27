@@ -1,0 +1,56 @@
+---
+const passos = [
+  { titulo: 'Chama no WhatsApp', texto: 'Conte o que precisa: tipo de peça, tamanho e, se tiver, uma foto do local.' },
+  { titulo: 'Receba a arte e o orçamento', texto: 'A gente cria a arte e manda o valor. Você ajusta até ficar do seu jeito.' },
+  { titulo: 'Produção e instalação', texto: 'Produzimos na nossa oficina e instalamos no seu comércio em São Paulo.' },
+];
+---
+
+<section class="secao secao-tela" id="como-funciona">
+  <div class="container">
+    <span class="tag" data-reveal>Como funciona</span>
+    <h2 class="titulo-secao" data-reveal>Simples assim, <span>em 3 passos.</span></h2>
+
+    <ol class="passos" data-reveal-grupo>
+      {
+        passos.map((p, i) => (
+          <li>
+            <span class="passo-num">{i + 1}</span>
+            <h3>{p.titulo}</h3>
+            <p>{p.texto}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .passos {
+    list-style: none;
+    padding: 0;
+    margin: 48px 0 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    counter-reset: passo;
+  }
+  .passos li { position: relative; padding-top: 28px; border-top: 2px solid var(--preto-3); }
+  .passos li::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 64px;
+    height: 2px;
+    background: var(--laranja);
+    transition: width 0.8s ease 0.35s;
+  }
+  /* A linha laranja se estende quando o passo aparece. */
+  :global(.js) .passos li:not(.visivel)::before { width: 0; }
+  .passo-num { font-family: var(--fonte-titulo); font-size: 64px; line-height: 1; color: var(--laranja); }
+  .passos h3 { font-family: var(--fonte-titulo); text-transform: uppercase; font-size: 28px; line-height: 1.05; margin: 12px 0 8px; }
+  .passos p { margin: 0; color: var(--cinza); }
+
+  @media (max-width: 760px) { .passos { grid-template-columns: 1fr; } }
+</style>

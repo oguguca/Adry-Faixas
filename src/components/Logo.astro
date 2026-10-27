@@ -1,0 +1,19 @@
+---
+// Logo provisório recriado do Instagram: "ADRY" com o A em laranja.
+interface Props {
+  size?: number;
+}
+const { size = 26 } = Astro.props;
+---
+
+<span class="logo" style={`font-size:${size}px`} aria-label="Adry Comunicação Visual">
+  <span class="logo-mark"><b>A</b>DRY</span>
+  <span class="logo-sub">comunicação visual</span>
+</span>
+
+<style>
+  .logo { display: inline-flex; flex-direction: column; line-height: 1; color: var(--branco); }
+  .logo-mark { font-family: var(--fonte-titulo); letter-spacing: 0.02em; font-style: italic; }
+  .logo-mark b { color: var(--laranja); font-weight: 400; }
+  .logo-sub { font-size: 0.32em; letter-spacing: 0.18em; text-transform: uppercase; color: var(--cinza); margin-top: 0.25em; }
+</style>

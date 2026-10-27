@@ -1,0 +1,136 @@
+:root {
+  --preto: #0e0e0e;
+  --preto-2: #171717;
+  --preto-3: #222;
+  --branco: #fff;
+  --cinza: #a9a9a9;
+  --cinza-claro: #d6d6d6;
+  --laranja: #f7941d;
+  --laranja-escuro: #d97a06;
+  --verde-wa: #25d366;
+  --verde-wa-escuro: #1ebe5b;
+
+  --fonte-titulo: 'Anton', Impact, 'Arial Narrow', sans-serif;
+  --fonte-texto: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --altura-header: 72px;
+  /* Altura de uma "tela" abaixo do header fixo. */
+  --altura-tela: calc(100svh - var(--altura-header));
+
+  --largura: 1200px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --raio: 10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: var(--altura-header); }
+
+body {
+  margin: 0;
+  background: var(--preto);
+  color: var(--branco);
+  font-family: var(--fonte-texto);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img, video { max-width: 100%; display: block; }
+
+a { color: inherit; text-decoration: none; }
+
+h1, h2, h3 { margin: 0; font-weight: 400; }
+
+.container { width: 100%; max-width: var(--largura); margin: 0 auto; padding: 0 var(--gutter); }
+
+.secao { padding: clamp(64px, 10vw, 120px) 0; }
+
+/* Seção que ocupa a tela inteira, com o conteúdo centralizado na vertical. */
+.secao-tela {
+  min-height: var(--altura-tela);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(40px, 7vh, 96px) 0;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--laranja);
+}
+
+.titulo-secao {
+  font-family: var(--fonte-titulo);
+  text-transform: uppercase;
+  font-size: clamp(36px, min(6vw, 9vh), 64px);
+  line-height: 0.95;
+  margin: 12px 0 16px;
+}
+.titulo-secao span { color: var(--laranja); }
+
+.lead { color: var(--cinza); max-width: 56ch; margin: 0; font-size: 17px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 24px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  transition: transform 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:focus-visible { outline: 3px solid var(--laranja); outline-offset: 3px; }
+.btn svg { width: 20px; height: 20px; flex: none; }
+
+.btn-wa { background: var(--verde-wa); color: #fff; }
+.btn-wa:hover { background: var(--verde-wa-escuro); }
+
+.btn-contorno { border: 2px solid var(--preto-3); color: var(--branco); }
+.btn-contorno:hover { border-color: var(--laranja); }
+
+.listra {
+  height: 12px;
+  background: repeating-linear-gradient(45deg, var(--laranja) 0 16px, var(--preto) 16px 32px);
+}
+
+/* ---------- Efeitos ---------- */
+/* A classe .js entra no <html> antes da pintura; sem JS nada fica escondido. */
+
+/* Entrada do topo ao carregar. --d = ordem do elemento. */
+.js [data-entrada] {
+  animation: entrar-subindo 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--d, 0) * 90ms + 100ms);
+}
+.js .linha > [data-entrada] { animation-name: entrar-linha; }
+
+@keyframes entrar-subindo {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes entrar-linha {
+  from { transform: translateY(105%); }
+  to { transform: none; }
+}
+
+/* Revelar ao rolar. --atraso é posto pelo script nos filhos de [data-reveal-grupo]. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--atraso, 0ms);
+}
+.js [data-reveal].visivel { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

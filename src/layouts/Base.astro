@@ -1,0 +1,81 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#0e0e0e" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <slot />
+    <script>
+      const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Filhos de [data-reveal-grupo] aparecem em cascata.
+      document.querySelectorAll<HTMLElement>('[data-reveal-grupo]').forEach((grupo) => {
+        Array.from(grupo.children).forEach((filho, i) => {
+          const el = filho as HTMLElement;
+          el.setAttribute('data-reveal', '');
+          el.style.setProperty('--atraso', `${Math.min(i, 6) * 80}ms`);
+        });
+      });
+
+      const obs = new IntersectionObserver(
+        (entradas) => {
+          entradas.forEach((e) => {
+            if (!e.isIntersecting) return;
+            e.target.classList.add('visivel');
+            obs.unobserve(e.target);
+          });
+        },
+        { threshold: 0.15, rootMargin: '0px 0px -40px 0px' },
+      );
+      document.querySelectorAll('[data-reveal]').forEach((el) => obs.observe(el));
+
+      // Contador: sobe de 0 até o valor, logo depois da entrada do topo.
+      document.querySelectorAll<HTMLElement>('[data-contar]').forEach((el) => {
+        const alvo = Number(el.dataset.contar);
+        if (reduzido) return;
+        el.textContent = '0';
+        const duracao = 1400;
+        setTimeout(() => {
+          const t0 = performance.now();
+          const passo = (agora: number) => {
+            const p = Math.min(1, (agora - t0) / duracao);
+            el.textContent = String(Math.round(alvo * (1 - Math.pow(1 - p, 3))));
+            if (p < 1) requestAnimationFrame(passo);
+          };
+          requestAnimationFrame(passo);
+        }, 700);
+      });
+
+      // Header compacto depois de rolar um pouco.
+      const header = document.querySelector('.header');
+      const marcar = () => header?.classList.toggle('rolado', window.scrollY > 24);
+      marcar();
+      window.addEventListener('scroll', marcar, { passive: true });
+    </script>
+  </body>
+</html>

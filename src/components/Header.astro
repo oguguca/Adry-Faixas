@@ -1,0 +1,45 @@
+---
+import Logo from './Logo.astro';
+import IconeWhatsapp from './IconeWhatsapp.astro';
+import { whatsappLink } from '../data/site';
+---
+
+<header class="header">
+  <div class="container header-inner">
+    <!-- "#top" sem elemento com esse id rola para o início da página (padrão do HTML). -->
+    <a href="#top" aria-label="Voltar ao início"><Logo /></a>
+    <nav class="nav" aria-label="Principal">
+      <a href="#servicos">Serviços</a>
+      <a href="#portfolio">Portfólio</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#contato">Contato</a>
+    </nav>
+    <a class="btn btn-wa header-cta" href={whatsappLink()} target="_blank" rel="noopener">
+      <IconeWhatsapp /> <span>WhatsApp</span>
+    </a>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(14, 14, 14, 0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--preto-3);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  .header.rolado { background: rgba(14, 14, 14, 0.96); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45); }  .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: var(--altura-header); }
+  .nav { display: flex; gap: 32px; font-size: 14px; font-weight: 500; color: var(--cinza-claro); }
+  .nav a:hover { color: var(--laranja); }
+  .header-cta { padding: 10px 16px; font-size: 14px; }
+
+  @media (max-width: 860px) {
+    .nav { display: none; }
+  }
+  @media (max-width: 420px) {
+    .header-cta span { display: none; }
+    .header-cta { padding: 10px; }
+  }
+</style>

@@ -1,0 +1,213 @@
+---
+import IconeWhatsapp from './IconeWhatsapp.astro';
+import { empresa, heroClips, whatsappLink } from '../data/site';
+---
+
+<section class="hero">
+  <div class="hero-grid">
+    <div class="hero-texto">
+      <span class="tag" data-entrada style="--d: 0">Comunicação visual · {empresa.cidade}</span>
+      <h1 class="hero-titulo">
+        <span class="linha"><span data-entrada style="--d: 1">Faixas, placas</span></span>
+        <span class="linha"><span data-entrada style="--d: 2">e fachadas</span></span>
+        <span class="linha"><span data-entrada style="--d: 3">que <em>fazem vender.</em></span></span>
+      </h1>
+      <p class="hero-lead" data-entrada style="--d: 4">
+        Faixas pintadas à mão, banners, adesivos, placas e letreiros para o comércio de São Paulo, da arte à
+        instalação.
+      </p>
+      <div class="hero-acoes" data-entrada style="--d: 5">
+        <a class="btn btn-wa" href={whatsappLink()} target="_blank" rel="noopener">
+          <IconeWhatsapp /> Pedir orçamento no WhatsApp
+        </a>
+        <a class="btn btn-contorno" href="#portfolio">Ver trabalhos</a>
+      </div>
+      <div class="hero-selo" data-entrada style="--d: 6">
+        <span class="hero-selo-num"><span data-contar={empresa.anos}>{empresa.anos}</span><sup>+</sup></span>
+        <span class="hero-selo-texto">anos fazendo<br />o comércio<br />vender</span>
+      </div>
+    </div>
+
+    <div class="hero-midia" data-reel>
+      {
+        heroClips.map((c, i) => (
+          <video
+            muted
+            playsinline
+            preload={i === 0 ? 'auto' : 'metadata'}
+            data-src={c.src}
+            data-start={c.start}
+            data-end={c.end}
+            data-label={c.label}
+            data-rate={c.rate ?? 1}
+            class={i === 0 ? 'ativo' : ''}
+            aria-hidden="true"
+          />
+        ))
+      }
+      <span class="hero-etiqueta" data-reel-label>{heroClips[0].label}</span>
+      <div class="hero-pontos" data-reel-dots>
+        {heroClips.map((_, i) => <i class={i === 0 ? 'ativo' : ''} />)}
+      </div>
+    </div>
+  </div>
+  <div class="listra"></div>
+</section>
+
+<script>
+  // Roda cada trecho de heroClips em sequência, com fade entre eles.
+  const reel = document.querySelector<HTMLElement>('[data-reel]');
+  if (reel) {
+    const videos = Array.from(reel.querySelectorAll('video'));
+    const label = reel.querySelector<HTMLElement>('[data-reel-label]')!;
+    const dots = Array.from(reel.querySelectorAll('[data-reel-dots] i'));
+    const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let atual = 0;
+
+    const carregar = (v: HTMLVideoElement) => {
+      if (!v.src) v.src = `${v.dataset.src}#t=${v.dataset.start}`;
+    };
+
+    const tocar = (n: number) => {
+      videos.forEach((v, k) => {
+        const ativo = k === n;
+        v.classList.toggle('ativo', ativo);
+        dots[k].classList.toggle('ativo', ativo);
+        if (!ativo) setTimeout(() => v.pause(), 800);
+      });
+      const v = videos[n];
+      carregar(v);
+      v.currentTime = Number(v.dataset.start);
+      // defaultPlaybackRate também, senão o carregamento inicial volta a velocidade para 1x.
+      v.defaultPlaybackRate = v.playbackRate = Number(v.dataset.rate);
+      v.play().catch(() => {});
+      label.textContent = v.dataset.label ?? '';
+      // Já deixa o próximo carregando.
+      carregar(videos[(n + 1) % videos.length]);
+    };
+
+    const proximo = () => {
+      atual = (atual + 1) % videos.length;
+      tocar(atual);
+    };
+
+    videos.forEach((v, k) => {
+      v.addEventListener('timeupdate', () => {
+        if (k === atual && v.currentTime >= Number(v.dataset.end)) proximo();
+      });
+      // Trecho que vai até o fim do arquivo pode terminar antes do timeupdate chegar no end.
+      v.addEventListener('ended', () => {
+        if (k === atual) proximo();
+      });
+    });
+
+    carregar(videos[0]);
+    if (!reduzido) tocar(0);
+  }
+</script>
+
+<style>
+  .hero {
+    background: var(--preto);
+    min-height: var(--altura-tela);
+    display: flex;
+    flex-direction: column;
+  }
+  .hero-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.45fr 1fr;
+  }
+  .hero-texto {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* Espaços encolhem com a altura da tela para topo + faixa caberem em uma tela. */
+    gap: clamp(12px, 2.6vh, 22px);
+    padding: clamp(20px, 4.5vh, 48px) var(--gutter) clamp(20px, 5vh, 56px)
+      max(var(--gutter), calc((100vw - var(--largura)) / 2 + var(--gutter)));
+  }
+  .hero-titulo {
+    font-family: var(--fonte-titulo);
+    text-transform: uppercase;
+    /* Limita também pela altura da tela, para o topo inteiro caber sem rolar. */
+    font-size: clamp(44px, min(6vw, 9vh), 88px);
+    line-height: 0.92;
+    letter-spacing: 0.01em;
+  }
+  .hero-titulo em { color: var(--laranja); font-style: normal; }
+  /* Cada linha esconde o texto que sobe de baixo na entrada. */
+  .linha { display: block; overflow: hidden; padding-bottom: 0.04em; }
+  .linha > span { display: inline-block; }
+  .hero-lead { margin: 0; color: var(--cinza); font-size: 18px; max-width: 44ch; }
+  .hero-acoes { display: flex; flex-wrap: wrap; gap: 12px; }
+  .hero-selo {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    align-self: flex-start;
+    margin-top: 8px;
+    padding: 14px 24px 14px 20px;
+    border: 1px solid var(--preto-3);
+    border-left: 4px solid var(--laranja);
+    border-radius: 0 var(--raio) var(--raio) 0;
+    background: linear-gradient(90deg, rgba(247, 148, 29, 0.12), transparent 70%);
+  }
+  .hero-selo-num {
+    font-family: var(--fonte-titulo);
+    font-size: 64px;
+    line-height: 0.85;
+    color: var(--laranja);
+  }
+  .hero-selo-num sup { font-size: 0.5em; vertical-align: top; margin-left: 2px; }
+  .hero-selo-texto {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    line-height: 1.35;
+    text-transform: uppercase;
+    color: var(--cinza-claro);
+  }
+
+  .hero-midia { position: relative; overflow: hidden; background: var(--preto-2); }
+  .hero-midia video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .hero-midia video.ativo { opacity: 1; }
+  .hero-midia::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent 35%);
+    pointer-events: none;
+  }
+  .hero-etiqueta {
+    position: absolute;
+    left: 20px;
+    bottom: 28px;
+    z-index: 2;
+    background: var(--laranja);
+    color: #000;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+  }
+  .hero-pontos { position: absolute; right: 20px; bottom: 34px; z-index: 2; display: flex; gap: 6px; }
+  .hero-pontos i { width: 26px; height: 3px; background: rgba(255, 255, 255, 0.35); }
+  .hero-pontos i.ativo { background: var(--laranja); }
+
+  @media (max-width: 860px) {
+    .hero { min-height: 0; }
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-texto { padding: 40px var(--gutter) 36px; }
+    .hero-midia { aspect-ratio: 4 / 5; max-height: 70svh; width: 100%; }
+  }
+</style>

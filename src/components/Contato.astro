@@ -1,0 +1,52 @@
+---
+import IconeWhatsapp from './IconeWhatsapp.astro';
+import Logo from './Logo.astro';
+import ChatDuvidas from './ChatDuvidas.astro';
+import FaixaCorrida from './FaixaCorrida.astro';
+import { empresa, whatsappLink } from '../data/site';
+const ano = new Date().getFullYear();
+---
+
+<!-- Chamada final + rodapé dividem uma tela inteira. -->
+<div class="final" id="contato">
+<section class="cta">
+  <FaixaCorrida tema="escura" />
+  <div class="container cta-inner" data-reveal-grupo>
+    <h2 class="titulo-secao">Sua loja merece <span>ser vista.</span></h2>
+    <p class="lead">Mande uma mensagem com o que você precisa e receba a arte e o orçamento.</p>
+    <a class="btn btn-wa cta-btn" href={whatsappLink()} target="_blank" rel="noopener">
+      <IconeWhatsapp /> Pedir orçamento no WhatsApp
+    </a>
+  </div>
+</section>
+
+<footer class="rodape">
+  <div class="container rodape-inner">
+    <Logo size={22} />
+    <ul>
+      <li>{empresa.cidade}</li>
+      <li><a href={`tel:+55${empresa.telefoneFixo.replace(/\D/g, '')}`}>{empresa.telefoneFixo}</a></li>
+      <li><a href={`mailto:${empresa.email}`}>{empresa.email}</a></li>
+      <li><a href={empresa.instagram} target="_blank" rel="noopener">Instagram @adry_faixas</a></li>
+    </ul>
+    <small>© {ano} {empresa.nome} · {empresa.subtitulo}</small>
+  </div>
+</footer>
+</div>
+
+<ChatDuvidas />
+
+<style>
+  .final { min-height: var(--altura-tela); display: flex; flex-direction: column; }
+  .cta { background: var(--laranja); color: #000; flex: 1; display: flex; flex-direction: column; }
+  .cta-inner { flex: 1; justify-content: center; }
+  .cta-inner { padding-top: clamp(64px, 9vw, 110px); padding-bottom: clamp(64px, 9vw, 110px); text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .cta .titulo-secao span { color: var(--branco); }
+  .cta .lead { color: rgba(0, 0, 0, 0.75); }
+  .cta-btn { margin-top: 32px; font-size: 17px; padding: 18px 28px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
+
+  .rodape { border-top: 1px solid var(--preto-3); padding: 40px 0; color: var(--cinza); font-size: 14px; }
+  .rodape-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  .rodape ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 24px; flex-wrap: wrap; }
+  .rodape a:hover { color: var(--laranja); }
+</style>

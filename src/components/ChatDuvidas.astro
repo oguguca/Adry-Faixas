@@ -1,0 +1,348 @@
+---
+// Chat de dúvidas no botão flutuante. Sem JS, o botão continua abrindo o WhatsApp direto.
+import IconeWhatsapp from './IconeWhatsapp.astro';
+import Logo from './Logo.astro';
+import { faq, whatsappLink } from '../data/site';
+
+const linkDuvida = whatsappLink('Olá! Vi o site da Adry e tenho uma dúvida.');
+const linkOrcamento = whatsappLink();
+---
+
+<div class="chat" data-chat data-link-duvida={linkDuvida} data-link-orcamento={linkOrcamento}>
+  <section class="chat-painel" id="chat-painel" role="dialog" aria-label="Tire suas dúvidas" hidden>
+    <header class="chat-topo">
+      <span class="chat-avatar"><Logo size={15} /></span>
+      <div>
+        <strong>Adry</strong>
+        <span class="chat-status">online · responde na hora</span>
+      </div>
+      <button type="button" class="chat-fechar" data-chat-fechar aria-label="Fechar chat">×</button>
+    </header>
+    <div class="chat-mensagens" data-chat-mensagens aria-live="polite"></div>
+    <div class="chat-opcoes" data-chat-opcoes></div>
+  </section>
+
+  <a
+    class="chat-botao"
+    href={linkOrcamento}
+    target="_blank"
+    rel="noopener"
+    aria-label="Tirar dúvidas"
+    aria-controls="chat-painel"
+    aria-expanded="false"
+    data-chat-botao
+  >
+    <span class="chat-botao-icone"><IconeWhatsapp /></span>
+    <span class="chat-botao-x" aria-hidden="true">×</span>
+  </a>
+  <span class="chat-balao" data-chat-balao>Ficou com dúvida? 👋</span>
+</div>
+
+<script define:vars={{ faq }}>
+  const raiz = document.querySelector('[data-chat]');
+  const painel = raiz.querySelector('.chat-painel');
+  const botao = raiz.querySelector('[data-chat-botao]');
+  const balao = raiz.querySelector('[data-chat-balao]');
+  const msgs = raiz.querySelector('[data-chat-mensagens]');
+  const opcoes = raiz.querySelector('[data-chat-opcoes]');
+  const linkDuvida = raiz.dataset.linkDuvida;
+  const linkOrcamento = raiz.dataset.linkOrcamento;
+  const iconeWa = botao.querySelector('svg').outerHTML;
+
+  const respondidas = new Set();
+  let iniciado = false;
+  let ocupado = false;
+
+  // Espera o layout assentar (a lista de perguntas muda a altura da área de mensagens).
+  const rolar = () => requestAnimationFrame(() => msgs.scrollTo({ top: msgs.scrollHeight, behavior: 'smooth' }));
+  const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  const bolha = (texto, quem) => {
+    const b = document.createElement('div');
+    b.className = `chat-msg chat-msg-${quem}`;
+    b.textContent = texto;
+    msgs.append(b);
+    rolar();
+    return b;
+  };
+
+  // Mostra "digitando…" por um tempo proporcional ao texto, depois a resposta.
+  const botDiz = async (texto) => {
+    const digitando = document.createElement('div');
+    digitando.className = 'chat-msg chat-msg-bot chat-digitando';
+    digitando.innerHTML = '<i></i><i></i><i></i>';
+    msgs.append(digitando);
+    rolar();
+    await esperar(Math.min(1400, 500 + texto.length * 8));
+    digitando.remove();
+    return bolha(texto, 'bot');
+  };
+
+  const linkWa = (texto, href) => {
+    const a = document.createElement('a');
+    a.className = 'chat-wa';
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.innerHTML = `${iconeWa} ${texto}`;
+    return a;
+  };
+
+  const mostrarOpcoes = () => {
+    opcoes.replaceChildren();
+    faq.forEach((item, i) => {
+      if (respondidas.has(i)) return;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chat-opcao';
+      b.textContent = item.pergunta;
+      b.addEventListener('click', () => perguntar(i));
+      opcoes.append(b);
+    });
+    opcoes.append(linkWa('Falar no WhatsApp', linkDuvida));
+    opcoes.scrollTop = 0;
+    rolar();
+  };
+
+  const perguntar = async (i) => {
+    if (ocupado) return;
+    ocupado = true;
+    const item = faq[i];
+    respondidas.add(i);
+    opcoes.replaceChildren();
+    bolha(item.pergunta, 'eu');
+    const resposta = await botDiz(item.resposta);
+    if (item.whatsapp) {
+      resposta.append(linkWa('Chamar no WhatsApp', linkOrcamento));
+      rolar();
+    }
+    ocupado = false;
+    mostrarOpcoes();
+  };
+
+  const iniciar = async () => {
+    iniciado = true;
+    ocupado = true;
+    await botDiz('Oi! 👋 Aqui é da Adry Comunicação Visual.');
+    await botDiz('Escolha uma dúvida abaixo. Se preferir, fale direto com a gente no WhatsApp.');
+    ocupado = false;
+    mostrarOpcoes();
+  };
+
+  const abrir = (sim) => {
+    painel.hidden = !sim;
+    raiz.classList.toggle('aberto', sim);
+    botao.setAttribute('aria-expanded', String(sim));
+    botao.setAttribute('aria-label', sim ? 'Fechar chat' : 'Tirar dúvidas');
+    balao.hidden = true;
+    if (sim && !iniciado) iniciar();
+  };
+
+  botao.addEventListener('click', (e) => {
+    e.preventDefault();
+    abrir(painel.hidden);
+  });
+  raiz.querySelector('[data-chat-fechar]').addEventListener('click', () => {
+    abrir(false);
+    botao.focus();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !painel.hidden) {
+      abrir(false);
+      botao.focus();
+    }
+  });
+
+  // Balão de convite aparece depois de alguns segundos e some sozinho.
+  balao.hidden = true;
+  setTimeout(() => {
+    if (!iniciado) balao.hidden = false;
+  }, 4000);
+  setTimeout(() => (balao.hidden = true), 12000);
+  balao.addEventListener('click', () => abrir(true));
+</script>
+
+<style is:global>
+  .chat { position: fixed; right: 20px; bottom: 20px; z-index: 60; font-family: var(--fonte-texto); }
+
+  .chat-botao {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--verde-wa);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+  .chat-botao:hover { transform: scale(1.08); }
+  /* Anel pulsando para chamar atenção; para quando o chat está aberto. */
+  .chat-botao::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--verde-wa);
+    animation: chat-pulso 2.4s ease-out infinite;
+    pointer-events: none;
+  }
+  .chat.aberto .chat-botao::before { display: none; }
+  @keyframes chat-pulso {
+    0% { transform: scale(1); opacity: 0.8; }
+    70%, 100% { transform: scale(1.6); opacity: 0; }
+  }
+  .chat-botao:focus-visible { outline: 3px solid var(--laranja); outline-offset: 3px; }
+  .chat-botao-icone svg { width: 32px; height: 32px; }
+  .chat-botao-x { display: none; font-size: 34px; line-height: 1; font-weight: 300; }
+  .chat.aberto .chat-botao { background: var(--preto-3); }
+  .chat.aberto .chat-botao-icone { display: none; }
+  .chat.aberto .chat-botao-x { display: block; }
+
+  .chat-balao {
+    position: absolute;
+    right: 72px;
+    bottom: 12px;
+    white-space: nowrap;
+    background: #fff;
+    color: #111;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 9px 14px;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    animation: chat-entrar 0.3s ease;
+  }
+  .chat-balao[hidden] { display: none; }
+
+  .chat-painel {
+    position: absolute;
+    right: 0;
+    bottom: 76px;
+    width: min(370px, calc(100vw - 32px));
+    height: min(560px, calc(100svh - 120px));
+    display: flex;
+    flex-direction: column;
+    background: var(--preto-2);
+    border: 1px solid var(--preto-3);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+    animation: chat-entrar 0.25s ease;
+    transform-origin: bottom right;
+  }
+  .chat-painel[hidden] { display: none; }
+
+  .chat-topo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--preto);
+    border-bottom: 3px solid var(--laranja);
+  }
+  .chat-topo strong { display: block; font-size: 15px; }
+  .chat-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--preto-3);
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .chat-avatar .logo-sub { display: none; }
+  .chat-status { font-size: 12px; color: var(--verde-wa); }
+  .chat-status::before { content: '●'; margin-right: 5px; font-size: 9px; vertical-align: 1px; }
+  .chat-fechar {
+    margin-left: auto;
+    background: none;
+    border: 0;
+    color: var(--cinza);
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .chat-fechar:hover { color: var(--branco); }
+
+  .chat-mensagens {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .chat-msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.45;
+    border-radius: 14px;
+    animation: chat-entrar 0.2s ease;
+  }
+  .chat-msg-bot { align-self: flex-start; background: var(--preto-3); color: var(--branco); border-bottom-left-radius: 4px; }
+  .chat-msg-eu { align-self: flex-end; background: var(--laranja); color: #000; font-weight: 600; border-bottom-right-radius: 4px; }
+  .chat-msg .chat-wa { margin-top: 10px; }
+
+  .chat-digitando { display: flex; gap: 4px; padding: 14px; }
+  .chat-digitando i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--cinza);
+    animation: chat-pulo 1s infinite ease-in-out;
+  }
+  .chat-digitando i:nth-child(2) { animation-delay: 0.15s; }
+  .chat-digitando i:nth-child(3) { animation-delay: 0.3s; }
+
+  .chat-opcoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--preto-3);
+    max-height: 38%;
+    overflow-y: auto;
+  }
+  .chat-opcoes:empty { display: none; }
+  .chat-opcao {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--laranja);
+    background: transparent;
+    border: 1px solid var(--laranja);
+    border-radius: 999px;
+    padding: 7px 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .chat-opcao:hover { background: var(--laranja); color: #000; }
+  .chat-wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--verde-wa);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 8px 14px;
+  }
+  .chat-wa:hover { background: var(--verde-wa-escuro); }
+  .chat-wa svg { width: 16px; height: 16px; }
+
+  @keyframes chat-entrar {
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes chat-pulo {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+</style>

@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Servicos from '../components/Servicos.astro';
+import Portfolio from '../components/Portfolio.astro';
+import ComoFunciona from '../components/ComoFunciona.astro';
+import Contato from '../components/Contato.astro';
+---
+
+<Base
+  title="Adry Faixas · Comunicação Visual em São Paulo"
+  description="Faixas pintadas à mão, banners, placas, adesivos, fachadas e letreiros em São Paulo. Mais de 30 anos no ramo. Peça seu orçamento pelo WhatsApp."
+>
+  <Header />
+  <main>
+    <Hero />
+    <Servicos />
+    <Portfolio />
+    <ComoFunciona />
+  </main>
+  <Contato />
+</Base>
