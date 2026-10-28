@@ -149,8 +149,9 @@ export const portfolio: Trabalho[] = [
     titulo: 'Reforma de fachada: antes e depois',
     categoria: 'Fachadas',
     tipo: 'antes-depois',
-    antes: '/media/fotos/2023-04-10_Cq20JaNgkDO_1.jpg',
-    src: '/media/fotos/2023-04-10_Cq20JaNgkDO_3.jpg',
+    // Versões recortadas: sem as faixas borradas e o "ANTES"/"DEPOIS" vermelho do post original.
+    antes: '/media/fotos/2023-04-10_Cq20JaNgkDO_1-recorte.jpg',
+    src: '/media/fotos/2023-04-10_Cq20JaNgkDO_3-recorte.jpg',
   },
   { titulo: 'Adesivo decorativo', categoria: 'Adesivos', tipo: 'foto', src: '/media/fotos/2025-05-22_DJ998QWy_IC_1.jpg' },
   { titulo: 'Adesivo decorativo', categoria: 'Adesivos', tipo: 'foto', src: '/media/fotos/2025-05-22_DJ998QWy_IC_2.jpg' },
