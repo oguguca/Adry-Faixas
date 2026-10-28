@@ -127,20 +127,32 @@ const categorias = ['Todos', ...new Set(portfolio.map((t) => t.categoria))];
 
   // Vídeos do portfólio só carregam e tocam quando aparecem na tela.
   const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const naTela = new Set<HTMLVideoElement>();
   const obs = new IntersectionObserver(
     (entradas) => {
       entradas.forEach((e) => {
         const v = e.target as HTMLVideoElement;
         if (e.isIntersecting) {
+          naTela.add(v);
           if (!v.src) v.src = v.dataset.src!;
           if (!reduzido) v.play().catch(() => {});
         } else {
+          naTela.delete(v);
           v.pause();
         }
       });
     },
     { threshold: 0.4 },
   );
+
+  // Vídeo automático bloqueado no celular: a cada toque, retoma os vídeos visíveis que ficaram parados.
+  const retomar = () => {
+    if (reduzido) return;
+    naTela.forEach((v) => {
+      if (v.paused) v.play().catch(() => {});
+    });
+  };
+  ['touchend', 'click'].forEach((ev) => document.addEventListener(ev, retomar, { passive: true, capture: true }));
   document.querySelectorAll<HTMLVideoElement>('.mosaico video').forEach((v) => {
     // Repete só o trecho [start, end] (ou do start até o fim do vídeo).
     const start = Number(v.dataset.start);

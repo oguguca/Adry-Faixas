@@ -120,6 +120,16 @@ import { empresa, heroClips, TELA_LEVE, whatsappLink } from '../data/site';
 
     carregar(videos[0]);
     if (!reduzido) tocar(0);
+
+    // Celular com vídeo automático bloqueado (economia de bateria/dados, Brave): o primeiro toque
+    // na página libera a reprodução, então retoma o vídeo atual nessa hora.
+    const liberar = () => {
+      const v = videos[atual];
+      if (!reduzido && v.paused) tocar(atual);
+    };
+    ['touchend', 'click', 'keydown'].forEach((ev) =>
+      document.addEventListener(ev, liberar, { once: true, passive: true, capture: true }),
+    );
   }
 </script>
 
