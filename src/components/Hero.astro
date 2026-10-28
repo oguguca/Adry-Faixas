@@ -222,4 +222,8 @@ import { empresa, heroClips, whatsappLink } from '../data/site';
     .hero-texto { padding: 40px 0 28px; }
     .hero-midia { aspect-ratio: 4 / 5; max-height: 70svh; width: 100%; margin: 0 0 32px; }
   }
+  /* Tablet em pé: vídeo mais baixo para não ocupar a tela toda. */
+  @media (min-width: 601px) and (max-width: 860px) {
+    .hero-midia { aspect-ratio: 4 / 3; }
+  }
 </style>

@@ -9,17 +9,23 @@ const linkOrcamento = whatsappLink();
 ---
 
 <div class="chat" data-chat data-link-duvida={linkDuvida} data-link-orcamento={linkOrcamento}>
+  <div class="chat-fundo" data-chat-fundo hidden></div>
   <section class="chat-painel" id="chat-painel" role="dialog" aria-label="Tire suas dúvidas" hidden>
     <header class="chat-topo">
       <span class="chat-avatar"><Logo size={15} /></span>
       <div>
-        <strong>Adry</strong>
-        <span class="chat-status">online · responde na hora</span>
+        <strong>Adry Comunicação Visual</strong>
+        <span class="chat-status">Tire suas dúvidas rapidinho</span>
       </div>
       <button type="button" class="chat-fechar" data-chat-fechar aria-label="Fechar chat">×</button>
     </header>
+    <!-- Mensagens e perguntas na mesma rolagem: as perguntas aparecem logo abaixo da última resposta. -->
     <div class="chat-mensagens" data-chat-mensagens aria-live="polite"></div>
-    <div class="chat-opcoes" data-chat-opcoes></div>
+    <footer class="chat-rodape">
+      <a class="chat-wa" href={linkDuvida} target="_blank" rel="noopener">
+        <IconeWhatsapp /> Falar com a gente no WhatsApp
+      </a>
+    </footer>
   </section>
 
   <a
@@ -35,25 +41,24 @@ const linkOrcamento = whatsappLink();
     <span class="chat-botao-icone"><IconeWhatsapp /></span>
     <span class="chat-botao-x" aria-hidden="true">×</span>
   </a>
-  <span class="chat-balao" data-chat-balao>Ficou com dúvida? 👋</span>
+  <button type="button" class="chat-balao" data-chat-balao hidden>Ficou com dúvida? 👋</button>
 </div>
 
 <script define:vars={{ faq }}>
   const raiz = document.querySelector('[data-chat]');
   const painel = raiz.querySelector('.chat-painel');
+  const fundo = raiz.querySelector('[data-chat-fundo]');
   const botao = raiz.querySelector('[data-chat-botao]');
   const balao = raiz.querySelector('[data-chat-balao]');
   const msgs = raiz.querySelector('[data-chat-mensagens]');
-  const opcoes = raiz.querySelector('[data-chat-opcoes]');
-  const linkDuvida = raiz.dataset.linkDuvida;
   const linkOrcamento = raiz.dataset.linkOrcamento;
   const iconeWa = botao.querySelector('svg').outerHTML;
+  const celular = window.matchMedia('(max-width: 600px)');
 
   const respondidas = new Set();
   let iniciado = false;
   let ocupado = false;
 
-  // Espera o layout assentar (a lista de perguntas muda a altura da área de mensagens).
   const rolar = () => requestAnimationFrame(() => msgs.scrollTo({ top: msgs.scrollHeight, behavior: 'smooth' }));
   const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -73,14 +78,14 @@ const linkOrcamento = whatsappLink();
     digitando.innerHTML = '<i></i><i></i><i></i>';
     msgs.append(digitando);
     rolar();
-    await esperar(Math.min(1400, 500 + texto.length * 8));
+    await esperar(Math.min(1200, 450 + texto.length * 7));
     digitando.remove();
     return bolha(texto, 'bot');
   };
 
   const linkWa = (texto, href) => {
     const a = document.createElement('a');
-    a.className = 'chat-wa';
+    a.className = 'chat-wa chat-wa-inline';
     a.href = href;
     a.target = '_blank';
     a.rel = 'noopener';
@@ -89,18 +94,24 @@ const linkOrcamento = whatsappLink();
   };
 
   const mostrarOpcoes = () => {
-    opcoes.replaceChildren();
-    faq.forEach((item, i) => {
-      if (respondidas.has(i)) return;
+    msgs.querySelector('.chat-opcoes')?.remove();
+    const restantes = faq.map((item, i) => ({ item, i })).filter(({ i }) => !respondidas.has(i));
+    if (!restantes.length) return;
+    const caixa = document.createElement('div');
+    caixa.className = 'chat-opcoes';
+    const titulo = document.createElement('span');
+    titulo.className = 'chat-opcoes-titulo';
+    titulo.textContent = respondidas.size ? 'Mais alguma dúvida?' : 'Escolha uma dúvida:';
+    caixa.append(titulo);
+    restantes.forEach(({ item, i }) => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'chat-opcao';
       b.textContent = item.pergunta;
       b.addEventListener('click', () => perguntar(i));
-      opcoes.append(b);
+      caixa.append(b);
     });
-    opcoes.append(linkWa('Falar no WhatsApp', linkDuvida));
-    opcoes.scrollTop = 0;
+    msgs.append(caixa);
     rolar();
   };
 
@@ -109,7 +120,7 @@ const linkOrcamento = whatsappLink();
     ocupado = true;
     const item = faq[i];
     respondidas.add(i);
-    opcoes.replaceChildren();
+    msgs.querySelector('.chat-opcoes')?.remove();
     bolha(item.pergunta, 'eu');
     const resposta = await botDiz(item.resposta);
     if (item.whatsapp) {
@@ -123,18 +134,20 @@ const linkOrcamento = whatsappLink();
   const iniciar = async () => {
     iniciado = true;
     ocupado = true;
-    await botDiz('Oi! 👋 Aqui é da Adry Comunicação Visual.');
-    await botDiz('Escolha uma dúvida abaixo. Se preferir, fale direto com a gente no WhatsApp.');
+    await botDiz('Oi! 👋 Aqui é da Adry. Separamos as dúvidas mais comuns para você.');
     ocupado = false;
     mostrarOpcoes();
   };
 
   const abrir = (sim) => {
     painel.hidden = !sim;
+    fundo.hidden = !sim;
     raiz.classList.toggle('aberto', sim);
     botao.setAttribute('aria-expanded', String(sim));
     botao.setAttribute('aria-label', sim ? 'Fechar chat' : 'Tirar dúvidas');
     balao.hidden = true;
+    // No celular o chat ocupa a tela: trava a rolagem da página por trás.
+    document.documentElement.style.overflow = sim && celular.matches ? 'hidden' : '';
     if (sim && !iniciado) iniciar();
   };
 
@@ -142,6 +155,7 @@ const linkOrcamento = whatsappLink();
     e.preventDefault();
     abrir(painel.hidden);
   });
+  fundo.addEventListener('click', () => abrir(false));
   raiz.querySelector('[data-chat-fechar]').addEventListener('click', () => {
     abrir(false);
     botao.focus();
@@ -154,7 +168,6 @@ const linkOrcamento = whatsappLink();
   });
 
   // Balão de convite aparece depois de alguns segundos e some sozinho.
-  balao.hidden = true;
   setTimeout(() => {
     if (!iniciado) balao.hidden = false;
   }, 4000);
@@ -189,12 +202,10 @@ const linkOrcamento = whatsappLink();
     pointer-events: none;
   }
   .chat.aberto .chat-botao::before { display: none; }
-  @keyframes chat-pulso {
-    0% { transform: scale(1); opacity: 0.8; }
-    70%, 100% { transform: scale(1.6); opacity: 0; }
-  }
   .chat-botao:focus-visible { outline: 3px solid var(--laranja); outline-offset: 3px; }
-  .chat-botao-icone svg { width: 32px; height: 32px; }
+  /* span inline deixava a linha de base empurrar o ícone para cima; grid centraliza de verdade. */
+  .chat-botao-icone { display: grid; place-items: center; line-height: 0; }
+  .chat-botao-icone svg { display: block; width: 32px; height: 32px; }
   .chat-botao-x { display: none; font-size: 34px; line-height: 1; font-weight: 300; }
   .chat.aberto .chat-botao { background: var(--preto-3); }
   .chat.aberto .chat-botao-icone { display: none; }
@@ -207,9 +218,11 @@ const linkOrcamento = whatsappLink();
     white-space: nowrap;
     background: #fff;
     color: #111;
+    font: inherit;
     font-size: 14px;
     font-weight: 700;
     padding: 9px 14px;
+    border: 0;
     border-radius: 18px 18px 4px 18px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
     cursor: pointer;
@@ -217,19 +230,22 @@ const linkOrcamento = whatsappLink();
   }
   .chat-balao[hidden] { display: none; }
 
+  .chat-fundo { display: none; }
+
   .chat-painel {
     position: absolute;
     right: 0;
     bottom: 76px;
-    width: min(370px, calc(100vw - 32px));
-    height: min(560px, calc(100svh - 120px));
+    width: min(380px, calc(100vw - 32px));
+    /* Nunca sobe por cima do header fixo. */
+    max-height: min(600px, calc(100svh - var(--altura-header) - 110px));
     display: flex;
     flex-direction: column;
     background: var(--preto-2);
     border: 1px solid var(--preto-3);
-    border-radius: 16px;
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
     animation: chat-entrar 0.25s ease;
     transform-origin: bottom right;
   }
@@ -239,11 +255,12 @@ const linkOrcamento = whatsappLink();
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px 16px;
+    padding: 14px 14px 14px 16px;
     background: var(--preto);
     border-bottom: 3px solid var(--laranja);
+    flex: none;
   }
-  .chat-topo strong { display: block; font-size: 15px; }
+  .chat-topo strong { display: block; font-size: 15px; line-height: 1.2; }
   .chat-avatar {
     width: 42px;
     height: 42px;
@@ -254,39 +271,47 @@ const linkOrcamento = whatsappLink();
     flex: none;
   }
   .chat-avatar .logo-sub { display: none; }
-  .chat-status { font-size: 12px; color: var(--verde-wa); }
-  .chat-status::before { content: '●'; margin-right: 5px; font-size: 9px; vertical-align: 1px; }
+  .chat-status { font-size: 12px; color: var(--cinza); }
   .chat-fechar {
     margin-left: auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     background: none;
     border: 0;
     color: var(--cinza);
     font-size: 26px;
     line-height: 1;
     cursor: pointer;
-    padding: 4px 8px;
   }
-  .chat-fechar:hover { color: var(--branco); }
+  .chat-fechar:hover { color: var(--branco); background: var(--preto-3); }
+  .chat-fechar:focus-visible { outline: 3px solid var(--laranja); outline-offset: 1px; }
 
   .chat-mensagens {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 120px;
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--preto-3) transparent;
   }
+  .chat-mensagens::-webkit-scrollbar { width: 6px; }
+  .chat-mensagens::-webkit-scrollbar-thumb { background: var(--preto-3); border-radius: 3px; }
+
   .chat-msg {
     max-width: 85%;
     padding: 10px 14px;
     font-size: 14px;
     line-height: 1.45;
-    border-radius: 14px;
+    border-radius: 16px;
     animation: chat-entrar 0.2s ease;
   }
   .chat-msg-bot { align-self: flex-start; background: var(--preto-3); color: var(--branco); border-bottom-left-radius: 4px; }
   .chat-msg-eu { align-self: flex-end; background: var(--laranja); color: #000; font-weight: 600; border-bottom-right-radius: 4px; }
-  .chat-msg .chat-wa { margin-top: 10px; }
 
   .chat-digitando { display: flex; gap: 4px; padding: 14px; }
   .chat-digitando i {
@@ -299,47 +324,85 @@ const linkOrcamento = whatsappLink();
   .chat-digitando i:nth-child(2) { animation-delay: 0.15s; }
   .chat-digitando i:nth-child(3) { animation-delay: 0.3s; }
 
+  /* Respostas rápidas: alinhadas à direita, do lado de quem pergunta. */
   .chat-opcoes {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 6px;
-    padding: 12px 16px 16px;
-    border-top: 1px solid var(--preto-3);
-    max-height: 38%;
-    overflow-y: auto;
+    margin-top: 6px;
+    animation: chat-entrar 0.25s ease;
   }
-  .chat-opcoes:empty { display: none; }
+  .chat-opcoes-titulo { align-self: flex-start; font-size: 12px; color: var(--cinza); margin: 2px 0 2px 4px; }
   .chat-opcao {
     font: inherit;
     font-size: 13px;
     font-weight: 600;
     color: var(--laranja);
-    background: transparent;
-    border: 1px solid var(--laranja);
+    background: rgba(247, 148, 29, 0.08);
+    border: 1px solid rgba(247, 148, 29, 0.55);
     border-radius: 999px;
-    padding: 7px 12px;
+    padding: 8px 14px;
     cursor: pointer;
-    text-align: left;
+    text-align: right;
+    max-width: 90%;
     transition: background 0.15s ease, color 0.15s ease;
   }
   .chat-opcao:hover { background: var(--laranja); color: #000; }
+  .chat-opcao:focus-visible { outline: 3px solid var(--laranja); outline-offset: 2px; }
+
+  .chat-rodape { flex: none; padding: 12px 16px 14px; border-top: 1px solid var(--preto-3); background: var(--preto-2); }
   .chat-wa {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     background: var(--verde-wa);
     color: #fff;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 800;
-    border-radius: 999px;
-    padding: 8px 14px;
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: background 0.15s ease;
   }
   .chat-wa:hover { background: var(--verde-wa-escuro); }
-  .chat-wa svg { width: 16px; height: 16px; }
+  .chat-wa svg { width: 18px; height: 18px; }
+  .chat-wa-inline { display: inline-flex; margin-top: 10px; padding: 8px 14px; font-size: 13px; border-radius: 999px; }
+  .chat-wa-inline svg { width: 16px; height: 16px; }
+
+  /* Celular: o chat vira uma gaveta que sobe de baixo e ocupa quase a tela toda. */
+  @media (max-width: 600px) {
+    .chat { right: 16px; bottom: 16px; }
+    .chat-fundo { display: block; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); animation: chat-fade 0.2s ease; }
+    .chat-fundo[hidden] { display: none; }
+    .chat-painel {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-height: 88svh;
+      height: 88svh;
+      border-radius: 20px 20px 0 0;
+      border-bottom: 0;
+      animation: chat-subir 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .chat-rodape { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+    /* Com a gaveta aberta, o X do topo fecha; o botão flutuante sai da frente. */
+    .chat.aberto .chat-botao { display: none; }
+    .chat-msg { font-size: 15px; }
+    .chat-opcao { font-size: 14px; padding: 10px 16px; }
+  }
 
   @keyframes chat-entrar {
     from { opacity: 0; transform: translateY(8px) scale(0.97); }
     to { opacity: 1; transform: none; }
+  }
+  @keyframes chat-subir { from { transform: translateY(100%); } to { transform: none; } }
+  @keyframes chat-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes chat-pulso {
+    0% { transform: scale(1); opacity: 0.8; }
+    70%, 100% { transform: scale(1.6); opacity: 0; }
   }
   @keyframes chat-pulo {
     0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }

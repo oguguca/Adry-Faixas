@@ -55,6 +55,10 @@ h1, h2, h3 { margin: 0; font-weight: 400; }
   justify-content: center;
   padding: clamp(40px, 7vh, 96px) 0;
 }
+/* Em celular e tablet a tela é alta e estreita: altura de tela inteira só deixaria vazio. */
+@media (max-width: 960px) {
+  .secao-tela { min-height: 0; padding: clamp(56px, 9vw, 88px) 0; }
+}
 
 .tag {
   display: inline-block;
