@@ -113,10 +113,16 @@ import { empresa, heroClips, whatsappLink } from '../data/site';
     display: flex;
     flex-direction: column;
   }
+  /* Texto e vídeo dentro da mesma largura do header: margens iguais nos dois lados. */
   .hero-grid {
     flex: 1;
     display: grid;
-    grid-template-columns: 1.45fr 1fr;
+    grid-template-columns: 1.3fr 1fr;
+    gap: clamp(24px, 4vw, 56px);
+    width: 100%;
+    max-width: var(--largura);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
   }
   .hero-texto {
     display: flex;
@@ -124,8 +130,7 @@ import { empresa, heroClips, whatsappLink } from '../data/site';
     justify-content: center;
     /* Espaços encolhem com a altura da tela para topo + faixa caberem em uma tela. */
     gap: clamp(12px, 2.6vh, 22px);
-    padding: clamp(20px, 4.5vh, 48px) var(--gutter) clamp(20px, 5vh, 56px)
-      max(var(--gutter), calc((100vw - var(--largura)) / 2 + var(--gutter)));
+    padding: clamp(20px, 4.5vh, 48px) 0 clamp(20px, 5vh, 56px);
   }
   .hero-titulo {
     font-family: var(--fonte-titulo);
@@ -169,7 +174,13 @@ import { empresa, heroClips, whatsappLink } from '../data/site';
     color: var(--cinza-claro);
   }
 
-  .hero-midia { position: relative; overflow: hidden; background: var(--preto-2); }
+  .hero-midia {
+    position: relative;
+    overflow: hidden;
+    background: var(--preto-2);
+    border-radius: var(--raio);
+    margin: clamp(16px, 3.5vh, 40px) 0;
+  }
   .hero-midia video {
     position: absolute;
     inset: 0;
@@ -207,7 +218,8 @@ import { empresa, heroClips, whatsappLink } from '../data/site';
   @media (max-width: 860px) {
     .hero { min-height: 0; }
     .hero-grid { grid-template-columns: 1fr; }
-    .hero-texto { padding: 40px var(--gutter) 36px; }
-    .hero-midia { aspect-ratio: 4 / 5; max-height: 70svh; width: 100%; }
+    .hero-grid { gap: 0; }
+    .hero-texto { padding: 40px 0 28px; }
+    .hero-midia { aspect-ratio: 4 / 5; max-height: 70svh; width: 100%; margin: 0 0 32px; }
   }
 </style>
