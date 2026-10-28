@@ -1,6 +1,6 @@
 ---
 import IconeWhatsapp from './IconeWhatsapp.astro';
-import { empresa, heroClips, whatsappLink } from '../data/site';
+import { empresa, heroClips, TELA_LEVE, whatsappLink } from '../data/site';
 ---
 
 <section class="hero">
@@ -28,7 +28,7 @@ import { empresa, heroClips, whatsappLink } from '../data/site';
       </div>
     </div>
 
-    <div class="hero-midia" data-reel>
+    <div class="hero-midia" data-reel data-tela-leve={TELA_LEVE}>
       {
         heroClips.map((c, i) => (
           <video
@@ -40,6 +40,7 @@ import { empresa, heroClips, whatsappLink } from '../data/site';
             data-end={c.end}
             data-label={c.label}
             data-rate={c.rate ?? 1}
+            data-leve={c.leve}
             class={i === 0 ? 'ativo' : ''}
             aria-hidden="true"
           />
@@ -64,6 +65,16 @@ import { empresa, heroClips, whatsappLink } from '../data/site';
     const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let atual = 0;
 
+    // Celular/tablet: troca para o trecho leve já cortado (começa no 0, sem pular no vídeo) e põe a capa.
+    if (window.matchMedia(reel.dataset.telaLeve!).matches) {
+      videos.forEach((v) => {
+        v.dataset.src = `${v.dataset.leve}.mp4`;
+        v.dataset.start = '0';
+        v.dataset.end = 'Infinity';
+        v.poster = `${v.dataset.leve}.jpg`;
+      });
+    }
+
     const carregar = (v: HTMLVideoElement) => {
       if (!v.src) v.src = `${v.dataset.src}#t=${v.dataset.start}`;
     };
@@ -80,7 +91,13 @@ import { empresa, heroClips, whatsappLink } from '../data/site';
       v.currentTime = Number(v.dataset.start);
       // defaultPlaybackRate também, senão o carregamento inicial volta a velocidade para 1x.
       v.defaultPlaybackRate = v.playbackRate = Number(v.dataset.rate);
-      v.play().catch(() => {});
+      // Se o celular bloquear vídeo automático (economia de bateria/dados), a capa fica visível
+      // e a sequência continua passando pelas capas.
+      v.play().catch(() => {
+        setTimeout(() => {
+          if (videos[atual] === v) proximo();
+        }, 3500);
+      });
       label.textContent = v.dataset.label ?? '';
       // Já deixa o próximo carregando.
       carregar(videos[(n + 1) % videos.length]);

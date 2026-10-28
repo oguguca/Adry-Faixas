@@ -69,16 +69,22 @@ export const faq: { pergunta: string; resposta: string; whatsapp?: boolean }[] =
 ];
 
 /**
+ * Celular e tablet usam versões leves dos vídeos (public/media/videos/m): só o trecho, sem áudio, 540px,
+ * com capa .jpg de mesmo nome. "leve" é o caminho sem extensão. Computador continua com os originais.
+ */
+export const TELA_LEVE = '(max-width: 960px)';
+
+/**
  * Trechos dos vídeos que rodam no topo. start/end em segundos, escolhidos para mostrar o trabalho ou o resultado.
  * rate opcional: velocidade do trecho (0.5 = câmera lenta, para esticar tomadas curtas).
  */
-export const heroClips: { src: string; label: string; start: number; end: number; rate?: number }[] = [
-  { src: '/media/videos/fachada-adry.mp4', label: 'A Adry', start: 27.3, end: 29.4, rate: 0.8 },
-  { src: '/media/videos/banner.mp4', label: 'Design', start: 0.1, end: 3.3, rate: 0.75 },
-  { src: '/media/videos/faixa-pintada.mp4', label: 'Faixa pintada à mão', start: 44, end: 50 },
-  { src: '/media/videos/banner.mp4', label: 'Banner instalado', start: 52, end: 58 },
-  { src: '/media/videos/vitrine-adesivo.mp4', label: 'Painel de vitrine', start: 19, end: 25 },
-  { src: '/media/videos/vitrine-perfurada.mp4', label: 'Adesivo perfurado', start: 8.5, end: 12.8 },
+export const heroClips: { src: string; label: string; start: number; end: number; rate?: number; leve: string }[] = [
+  { src: '/media/videos/fachada-adry.mp4', label: 'A Adry', start: 27.3, end: 29.4, rate: 0.8, leve: '/media/videos/m/hero-adry' },
+  { src: '/media/videos/banner.mp4', label: 'Design', start: 0.1, end: 3.3, rate: 0.75, leve: '/media/videos/m/hero-design' },
+  { src: '/media/videos/faixa-pintada.mp4', label: 'Faixa pintada à mão', start: 44, end: 50, leve: '/media/videos/m/hero-faixa' },
+  { src: '/media/videos/banner.mp4', label: 'Banner instalado', start: 52, end: 58, leve: '/media/videos/m/hero-banner' },
+  { src: '/media/videos/vitrine-adesivo.mp4', label: 'Painel de vitrine', start: 19, end: 25, leve: '/media/videos/m/vitrine-adesivo' },
+  { src: '/media/videos/vitrine-perfurada.mp4', label: 'Adesivo perfurado', start: 8.5, end: 12.8, leve: '/media/videos/m/vitrine-perfurada' },
 ];
 
 /** categoria: filtro do portfólio aberto por "Ver trabalhos". Sem categoria = serviço ainda sem trabalho no portfólio. */
@@ -126,16 +132,18 @@ export type Trabalho = {
   start?: number;
   /** Para vídeos: segundo em que o trecho termina e volta para start. */
   end?: number;
+  /** Para vídeos: versão leve para celular/tablet (ver TELA_LEVE). */
+  leve?: string;
 };
 
 // Portfólio, do mais recente para o mais antigo. Para incluir um trabalho, coloque o arquivo em public/media e adicione uma linha.
 // A ordem também monta o mosaico: o antes-depois (2x2) fica depois do freezer para o grid de 4 colunas fechar sem buracos.
 export const portfolio: Trabalho[] = [
-  { titulo: 'Adesivagem Villa Festas', categoria: 'Veículos', tipo: 'video', src: '/media/videos/fachada-adry.mp4', start: 13, end: 19 },
+  { titulo: 'Adesivagem Villa Festas', categoria: 'Veículos', tipo: 'video', src: '/media/videos/fachada-adry.mp4', start: 13, end: 19, leve: '/media/videos/m/port-villa' },
   { titulo: 'Vitrine MAB Odontologia', categoria: 'Adesivos', tipo: 'foto', src: '/media/fotos/2026-04-13_DXE15t2Fe_W_1.jpg' },
-  { titulo: 'Painel de vitrine Trend Renova', categoria: 'Adesivos', tipo: 'video', src: '/media/videos/vitrine-adesivo.mp4', start: 19, end: 25 },
-  { titulo: 'Faixa pintada à mão', categoria: 'Faixas', tipo: 'video', src: '/media/videos/faixa-pintada.mp4', start: 56, end: 64 },
-  { titulo: 'Banner de cardápio instalado', categoria: 'Banners', tipo: 'video', src: '/media/videos/banner.mp4', start: 52, end: 60 },
+  { titulo: 'Painel de vitrine Trend Renova', categoria: 'Adesivos', tipo: 'video', src: '/media/videos/vitrine-adesivo.mp4', start: 19, end: 25, leve: '/media/videos/m/vitrine-adesivo' },
+  { titulo: 'Faixa pintada à mão', categoria: 'Faixas', tipo: 'video', src: '/media/videos/faixa-pintada.mp4', start: 56, end: 64, leve: '/media/videos/m/port-faixa' },
+  { titulo: 'Banner de cardápio instalado', categoria: 'Banners', tipo: 'video', src: '/media/videos/banner.mp4', start: 52, end: 60, leve: '/media/videos/m/port-banner' },
   { titulo: 'Personalização de freezer', categoria: 'Adesivos', tipo: 'foto', src: '/media/fotos/2025-09-18_DOwijR1EmIN_1.jpg' },
   {
     titulo: 'Reforma de fachada: antes e depois',

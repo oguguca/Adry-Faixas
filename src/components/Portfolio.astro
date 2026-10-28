@@ -1,6 +1,6 @@
 ---
 import IconeWhatsapp from './IconeWhatsapp.astro';
-import { portfolio, whatsappLink } from '../data/site';
+import { portfolio, TELA_LEVE, whatsappLink } from '../data/site';
 
 const categorias = ['Todos', ...new Set(portfolio.map((t) => t.categoria))];
 ---
@@ -17,7 +17,7 @@ const categorias = ['Todos', ...new Set(portfolio.map((t) => t.categoria))];
       </div>
     </div>
 
-    <ul class="mosaico" data-reveal-grupo>
+    <ul class="mosaico" data-reveal-grupo data-tela-leve={TELA_LEVE}>
       {
         portfolio.map((t) => (
           <li
@@ -28,6 +28,7 @@ const categorias = ['Todos', ...new Set(portfolio.map((t) => t.categoria))];
               'data-tipo': t.tipo,
               'data-midia': t.src,
               'data-inicio': t.start ?? 0,
+              'data-leve': t.leve,
               'data-titulo': t.titulo,
               'data-wa': whatsappLink(`Olá! Vi o trabalho "${t.titulo}" no site da Adry e quero algo parecido.`),
               tabindex: 0,
@@ -49,6 +50,7 @@ const categorias = ['Todos', ...new Set(portfolio.map((t) => t.categoria))];
                 data-src={`${t.src}#t=${t.start ?? 0}`}
                 data-start={t.start ?? 0}
                 data-end={t.end}
+                data-leve={t.leve}
                 muted
                 playsinline
                 preload="none"
@@ -111,6 +113,18 @@ const categorias = ['Todos', ...new Set(portfolio.map((t) => t.categoria))];
     range.addEventListener('input', () => ad.style.setProperty('--pos', `${range.value}%`));
   });
 
+  // Celular/tablet: vídeos leves já cortados no trecho (sem pular no vídeo), em loop, com capa.
+  const telaLeve = window.matchMedia(document.querySelector<HTMLElement>('.mosaico')!.dataset.telaLeve!).matches;
+  if (telaLeve) {
+    document.querySelectorAll<HTMLVideoElement>('.mosaico video[data-leve]').forEach((v) => {
+      v.dataset.src = `${v.dataset.leve}.mp4`;
+      v.dataset.start = '0';
+      delete v.dataset.end;
+      v.poster = `${v.dataset.leve}.jpg`;
+      v.loop = true;
+    });
+  }
+
   // Vídeos do portfólio só carregam e tocam quando aparecem na tela.
   const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const obs = new IntersectionObserver(
@@ -160,7 +174,13 @@ const categorias = ['Todos', ...new Set(portfolio.map((t) => t.categoria))];
     lbMidia.replaceChildren();
     if (d.tipo === 'video') {
       const v = document.createElement('video');
-      v.src = `${d.midia}#t=${d.inicio}`;
+      if (telaLeve && d.leve) {
+        v.src = `${d.leve}.mp4`;
+        v.poster = `${d.leve}.jpg`;
+        v.loop = true;
+      } else {
+        v.src = `${d.midia}#t=${d.inicio}`;
+      }
       v.controls = true;
       v.autoplay = true;
       v.playsInline = true;
