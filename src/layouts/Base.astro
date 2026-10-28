@@ -1,11 +1,30 @@
 ---
 import '../styles/global.css';
+import { empresa, WHATSAPP_NUMERO } from '../data/site';
 
 interface Props {
   title: string;
   description: string;
 }
 const { title, description } = Astro.props;
+const canonica = new URL(Astro.url.pathname, Astro.site).href;
+const imagemCompartilhar = new URL('/media/fotos/2023-04-10_Cq20JaNgkDO_3.jpg', Astro.site).href;
+
+// Dados estruturados: dizem ao Google que isto é uma empresa local, com contato e região.
+const empresaLocal = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: empresa.nome,
+  alternateName: 'Adry Comunicação Visual',
+  description,
+  url: canonica,
+  image: imagemCompartilhar,
+  telephone: `+${WHATSAPP_NUMERO}`,
+  email: empresa.email,
+  address: { '@type': 'PostalAddress', addressLocality: 'São Paulo', addressRegion: 'SP', addressCountry: 'BR' },
+  areaServed: 'São Paulo',
+  sameAs: [empresa.instagram],
+};
 ---
 
 <!doctype html>
@@ -18,6 +37,11 @@ const { title, description } = Astro.props;
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonica} />
+    <meta property="og:image" content={imagemCompartilhar} />
+    <meta property="og:locale" content="pt_BR" />
+    <link rel="canonical" href={canonica} />
+    <script type="application/ld+json" set:html={JSON.stringify(empresaLocal)} />
     <meta name="theme-color" content="#0e0e0e" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script is:inline>document.documentElement.classList.add('js');</script>
