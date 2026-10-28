@@ -59,7 +59,11 @@ const linkOrcamento = whatsappLink();
   let iniciado = false;
   let ocupado = false;
 
-  const rolar = () => requestAnimationFrame(() => msgs.scrollTo({ top: msgs.scrollHeight, behavior: 'smooth' }));
+  // Sem alvo, desce até o fim; com alvo, para com ele no topo (a resposta fica à vista e as opções vêm embaixo).
+  const rolar = (alvo) =>
+    requestAnimationFrame(() =>
+      msgs.scrollTo({ top: alvo ? alvo.offsetTop - 12 : msgs.scrollHeight, behavior: 'smooth' }),
+    );
   const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const bolha = (texto, quem) => {
@@ -93,7 +97,7 @@ const linkOrcamento = whatsappLink();
     return a;
   };
 
-  const mostrarOpcoes = () => {
+  const mostrarOpcoes = (alvo) => {
     msgs.querySelector('.chat-opcoes')?.remove();
     const restantes = faq.map((item, i) => ({ item, i })).filter(({ i }) => !respondidas.has(i));
     if (!restantes.length) return;
@@ -112,7 +116,7 @@ const linkOrcamento = whatsappLink();
       caixa.append(b);
     });
     msgs.append(caixa);
-    rolar();
+    rolar(alvo);
   };
 
   const perguntar = async (i) => {
@@ -121,14 +125,11 @@ const linkOrcamento = whatsappLink();
     const item = faq[i];
     respondidas.add(i);
     msgs.querySelector('.chat-opcoes')?.remove();
-    bolha(item.pergunta, 'eu');
+    const pergunta = bolha(item.pergunta, 'eu');
     const resposta = await botDiz(item.resposta);
-    if (item.whatsapp) {
-      resposta.append(linkWa('Chamar no WhatsApp', linkOrcamento));
-      rolar();
-    }
+    if (item.whatsapp) resposta.append(linkWa('Chamar no WhatsApp', linkOrcamento));
     ocupado = false;
-    mostrarOpcoes();
+    mostrarOpcoes(pergunta);
   };
 
   const iniciar = async () => {
@@ -288,6 +289,8 @@ const linkOrcamento = whatsappLink();
   .chat-fechar:focus-visible { outline: 3px solid var(--laranja); outline-offset: 1px; }
 
   .chat-mensagens {
+    /* relative: offsetTop das bolhas passa a ser medido a partir daqui. */
+    position: relative;
     flex: 1 1 auto;
     min-height: 120px;
     overflow-y: auto;
