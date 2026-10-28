@@ -8,7 +8,7 @@ import { servicos } from '../data/site';
     <div class="servicos-topo" data-reveal-grupo>
       <div>
         <span class="tag">O que fazemos</span>
-        <h2 class="titulo-secao">Do pincel à <span>fachada pronta.</span></h2>
+        <h2 class="titulo-secao">Do começo <span>ao fim, com a gente.</span></h2>
       </div>
       <p class="lead">Produção própria, arte inclusa e instalação no seu comércio em São Paulo.</p>
     </div>
@@ -42,7 +42,8 @@ import { servicos } from '../data/site';
 
 <style>
   .servicos-topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 48px; flex-wrap: wrap; }
-  .servicos-topo .titulo-secao { margin-bottom: 0; }
+  /* Um pouco menor que o padrão para o título caber numa linha ao lado do texto. */
+  .servicos-topo .titulo-secao { margin-bottom: 0; font-size: clamp(32px, min(4.6vw, 7.5vh), 56px); }
   .servicos-topo .lead { flex: 0 1 34ch; }
   @media (min-width: 961px) {
     .servicos-topo { flex-wrap: nowrap; }
