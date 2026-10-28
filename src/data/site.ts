@@ -73,7 +73,7 @@ export const faq: { pergunta: string; resposta: string; whatsapp?: boolean }[] =
  * rate opcional: velocidade do trecho (0.5 = câmera lenta, para esticar tomadas curtas).
  */
 export const heroClips: { src: string; label: string; start: number; end: number; rate?: number }[] = [
-  { src: '/media/videos/fachada-adry.mp4', label: 'A Adry', start: 27.3, end: 29.4, rate: 0.5 },
+  { src: '/media/videos/fachada-adry.mp4', label: 'A Adry', start: 27.3, end: 29.4, rate: 0.8 },
   { src: '/media/videos/banner.mp4', label: 'Design', start: 0.1, end: 3.3, rate: 0.75 },
   { src: '/media/videos/faixa-pintada.mp4', label: 'Faixa pintada à mão', start: 44, end: 50 },
   { src: '/media/videos/banner.mp4', label: 'Banner instalado', start: 52, end: 58 },
